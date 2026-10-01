@@ -1,0 +1,8 @@
+{
+	"appId": "com.germanica.simulador",
+	"appName": "Simulador Germanica",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}

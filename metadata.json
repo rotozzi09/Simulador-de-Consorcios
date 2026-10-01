@@ -1,0 +1,7 @@
+{
+  "name": "Simulador de Consórcio",
+  "description": "Simulador profissional e avançado de consórcios imobiliários, automotivos e de serviços com análise de lances, comparativo com financiamento e projeções financeiras.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

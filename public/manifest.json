@@ -1,0 +1,55 @@
+{
+  "name": "Simulador Germânica - Consórcio Disal",
+  "short_name": "Germânica",
+  "description": "Simulador oficial de consórcio, parcelas, lances embutidos e regras de pós-contemplação do Grupo Germânica e Consórcio Disal.",
+  "id": "/?source=pwa",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#0b1320",
+  "theme_color": "#0b1320",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["finance", "business", "productivity", "utilities"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "48x48 72x72 96x96 128x128 144x144 192x192 256x256 384x384 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Simulador Germânica",
+      "short_name": "Simular",
+      "description": "Fazer nova simulação de consórcio e cálculo de parcelas",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/icon.svg",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Simulador Germânica Tela Principal"
+    }
+  ]
+}
