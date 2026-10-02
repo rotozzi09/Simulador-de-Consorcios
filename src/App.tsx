@@ -27,11 +27,15 @@ import {
   Link,
   MessageCircle,
   HelpCircle,
+  Send,
+  Mail,
+  ExternalLink,
 } from 'lucide-react';
 import { GermanicaParams, TipoPlano, TipoLance } from './types/germanica';
 import { calculateGermanica, formatBRL, formatPercent } from './utils/germanicaCalculations';
 import { generateGermanicaPdf, createGermanicaPdfDoc } from './utils/generateGermanicaPdf';
 import { PWAInstallModal } from './components/PWAInstallModal';
+import { BRLCurrencyInput } from './components/BRLCurrencyInput';
 
 export default function App() {
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -124,8 +128,8 @@ ${proposalNotes ? `📌 *Observação:* ${proposalNotes}\n` : ''}
 Grupo Germânica · Consórcio Disal`;
   };
 
-  // GERAÇÃO E DOWNLOAD DO PDF
-  const handleDownloadDirectPdf = () => {
+  // GERAÇÃO E DOWNLOAD DO PDF (baixa e ativa imediatamente as opções de compartilhamento social)
+  const handleDownloadDirectPdf = (openNativeShare = false) => {
     setIsGeneratingPdf(true);
 
     try {
@@ -136,9 +140,10 @@ Grupo Germânica · Consórcio Disal`;
       });
 
       setDownloadSuccess(true);
-      setTimeout(() => {
-        setDownloadSuccess(false);
-      }, 3000);
+
+      if (openNativeShare) {
+        handleSharePdf();
+      }
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
     } finally {
@@ -146,7 +151,7 @@ Grupo Germânica · Consórcio Disal`;
     }
   };
 
-  // COMPARTILHAMENTO UNIVERSAL
+  // COMPARTILHAMENTO UNIVERSAL / REDES SOCIAIS (Menu nativo do celular com o arquivo PDF)
   const handleSharePdf = async () => {
     setIsGeneratingPdf(true);
     const cleanClient = clientName.trim() || 'Cliente';
@@ -158,6 +163,8 @@ Grupo Germânica · Consórcio Disal`;
         consultantName,
         proposalNotes,
       });
+
+      setDownloadSuccess(true);
 
       try {
         await navigator.clipboard.writeText(text);
@@ -173,24 +180,22 @@ Grupo Germânica · Consórcio Disal`;
           text: `Olá ${cleanClient}, segue a sua Proposta Comercial do Consórcio Germânica / Disal.`,
         });
         setShareSuccess(true);
-        setTimeout(() => setShareSuccess(false), 3000);
+        setTimeout(() => setShareSuccess(false), 4000);
       } else if (navigator.share) {
         await navigator.share({
           title: `Proposta Consórcio Germânica - ${cleanClient}`,
           text: text,
         });
-        generateGermanicaPdf(res, { clientName, consultantName, proposalNotes });
         setShareSuccess(true);
-        setTimeout(() => setShareSuccess(false), 3000);
+        setTimeout(() => setShareSuccess(false), 4000);
       } else {
-        generateGermanicaPdf(res, { clientName, consultantName, proposalNotes });
         const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
         const win = window.open(whatsappUrl, '_blank');
         if (!win) {
           window.location.href = whatsappUrl;
         }
         setShareSuccess(true);
-        setTimeout(() => setShareSuccess(false), 3000);
+        setTimeout(() => setShareSuccess(false), 4000);
       }
     } catch (error: any) {
       if (error.name !== 'AbortError') {
@@ -207,6 +212,7 @@ Grupo Germânica · Consórcio Disal`;
   const handleDirectWhatsApp = () => {
     const text = getProposalFormattedText();
     generateGermanicaPdf(res, { clientName, consultantName, proposalNotes });
+    setDownloadSuccess(true);
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     const win = window.open(whatsappUrl, '_blank');
     if (!win) {
@@ -214,9 +220,43 @@ Grupo Germânica · Consórcio Disal`;
     }
   };
 
+  // Enviar no Telegram (1 clique)
+  const handleDirectTelegram = () => {
+    const text = getProposalFormattedText();
+    generateGermanicaPdf(res, { clientName, consultantName, proposalNotes });
+    setDownloadSuccess(true);
+    const telegramUrl = `https://t.me/share/url?text=${encodeURIComponent(text)}`;
+    const win = window.open(telegramUrl, '_blank');
+    if (!win) {
+      window.location.href = telegramUrl;
+    }
+  };
+
+  // Enviar por E-mail
+  const handleDirectEmail = () => {
+    const cleanClient = clientName.trim() || 'Cliente';
+    const text = getProposalFormattedText();
+    generateGermanicaPdf(res, { clientName, consultantName, proposalNotes });
+    setDownloadSuccess(true);
+    const subject = encodeURIComponent(`Proposta Comercial Consórcio Germânica - ${cleanClient}`);
+    const body = encodeURIComponent(text);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  // Copiar o resumo da proposta
+  const handleCopyProposalText = async () => {
+    const text = getProposalFormattedText();
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedMessage(true);
+      setTimeout(() => setCopiedMessage(false), 3000);
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
   // Copiar o link do app para enviar para outra pessoa
   const handleCopyAppLink = () => {
-    // Garante o link público compartilhável
     const appUrl = window.location.origin;
     navigator.clipboard.writeText(appUrl);
     setCopiedLinkMessage(true);
@@ -401,13 +441,10 @@ Grupo Germânica · Consórcio Disal`;
                   <span className={`text-sm font-black ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                     R$
                   </span>
-                  <input
-                    type="number"
-                    step="1000"
-                    min="10000"
-                    max="500000"
+                  <BRLCurrencyInput
                     value={params.credito}
-                    onChange={(e) => handleUpdate('credito', Number(e.target.value) || 0)}
+                    onChange={(val) => handleUpdate('credito', val)}
+                    placeholder="0,00"
                     className={`w-full border-2 border-amber-500/70 rounded-xl px-3.5 py-2 text-base font-black font-num focus:outline-none focus:border-amber-400 ${
                       isDark ? 'bg-[#15233a] text-white' : 'bg-white text-slate-900'
                     }`}
@@ -429,10 +466,12 @@ Grupo Germânica · Consórcio Disal`;
                   </label>
                   <input
                     type="number"
-                    min="12"
-                    max="120"
-                    value={params.prazoMeses}
-                    onChange={(e) => handleUpdate('prazoMeses', Number(e.target.value) || 1)}
+                    min="1"
+                    max="240"
+                    value={params.prazoMeses === 0 ? '' : params.prazoMeses}
+                    placeholder="0"
+                    onChange={(e) => handleUpdate('prazoMeses', e.target.value === '' ? 0 : Number(e.target.value))}
+                    onFocus={(e) => e.target.select()}
                     className={`w-full border-2 border-amber-500/70 rounded-xl px-3 py-1.5 text-sm font-black font-num text-center focus:outline-none focus:border-amber-400 ${
                       isDark ? 'bg-[#15233a] text-white' : 'bg-white text-slate-900'
                     }`}
@@ -453,10 +492,12 @@ Grupo Germânica · Consórcio Disal`;
                     <input
                       type="number"
                       step="0.1"
-                      min="5"
-                      max="35"
-                      value={params.taxaAdmPercent}
-                      onChange={(e) => handleUpdate('taxaAdmPercent', Number(e.target.value) || 0)}
+                      min="0"
+                      max="100"
+                      value={params.taxaAdmPercent === 0 ? '' : params.taxaAdmPercent}
+                      placeholder="0"
+                      onChange={(e) => handleUpdate('taxaAdmPercent', e.target.value === '' ? 0 : Number(e.target.value))}
+                      onFocus={(e) => e.target.select()}
                       className={`w-full border-2 border-amber-500/70 rounded-xl px-3 py-1.5 text-sm font-black font-num text-center focus:outline-none focus:border-amber-400 ${
                         isDark ? 'bg-[#15233a] text-white' : 'bg-white text-slate-900'
                       }`}
@@ -622,14 +663,11 @@ Grupo Germânica · Consórcio Disal`;
                   <span className={`text-sm font-black ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                     R$
                   </span>
-                  <input
-                    type="number"
-                    step="500"
-                    min="0"
-                    max={params.credito}
-                    value={params.lanceProprioValor || ''}
+                  <BRLCurrencyInput
+                    value={params.lanceProprioValor}
+                    onChange={(val) => handleUpdate('lanceProprioValor', val)}
                     placeholder="0,00"
-                    onChange={(e) => handleUpdate('lanceProprioValor', Number(e.target.value) || 0)}
+                    max={params.credito}
                     className={`w-full border-2 border-amber-500/70 rounded-xl px-3.5 py-2 text-sm font-black font-num focus:outline-none focus:border-amber-400 ${
                       isDark ? 'bg-[#15233a] text-white' : 'bg-white text-slate-900'
                     }`}
@@ -792,10 +830,12 @@ Grupo Germânica · Consórcio Disal`;
               </span>
               <input
                 type="number"
-                min="1"
+                min="0"
                 max={params.prazoMeses - 1}
-                value={params.parcelasPagasAteLance}
-                onChange={(e) => handleUpdate('parcelasPagasAteLance', Number(e.target.value) || 1)}
+                value={params.parcelasPagasAteLance === 0 ? '' : params.parcelasPagasAteLance}
+                placeholder="0"
+                onChange={(e) => handleUpdate('parcelasPagasAteLance', e.target.value === '' ? 0 : Number(e.target.value))}
+                onFocus={(e) => e.target.select()}
                 className={`w-14 border-2 border-amber-500 rounded-xl px-2 py-1 text-xs font-black font-num text-center ${
                   isDark ? 'bg-[#0b1320] text-white' : 'bg-white text-slate-900'
                 }`}
@@ -1203,23 +1243,98 @@ Grupo Germânica · Consórcio Disal`;
                 </div>
               </div>
 
-              {/* FEEDBACKS DE SUCESSO */}
+              {/* FEEDBACKS E PAINEL DE COMPARTILHAMENTO RÁPIDO PARA REDES SOCIAIS */}
               {downloadSuccess && (
-                <div className="p-3 bg-emerald-500/20 border border-emerald-500/40 rounded-xl text-emerald-300 text-center font-bold text-xs flex items-center justify-center gap-2 animate-in fade-in">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>Arquivo PDF gerado e salvo no seu aparelho!</span>
+                <div className="p-4 rounded-2xl border-2 border-emerald-500/70 bg-gradient-to-b from-emerald-500/15 to-emerald-950/20 space-y-3 animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black shadow-md">
+                        <CheckCircle2 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-xs text-emerald-400">PDF Gerado e Baixado com Sucesso!</h4>
+                        <p className="text-[10px] text-slate-300">Escolha onde deseja enviar agora:</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-black text-amber-300 bg-amber-400/15 px-2.5 py-1 rounded-lg border border-amber-400/30">
+                      Pronto
+                    </span>
+                  </div>
+
+                  {/* GRID DE BOTÕES DAS REDES SOCIAIS */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                    {/* WhatsApp */}
+                    <button
+                      type="button"
+                      onClick={handleDirectWhatsApp}
+                      className="py-2.5 px-2 rounded-xl text-xs font-black bg-[#25D366] hover:bg-[#20bd5a] text-slate-950 flex flex-col items-center justify-center gap-1 shadow-md shadow-emerald-900/30 active:scale-95 transition-all cursor-pointer"
+                      title="Enviar pelo WhatsApp"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span>WhatsApp</span>
+                    </button>
+
+                    {/* Redes Sociais / Compartilhar Arquivo */}
+                    <button
+                      type="button"
+                      onClick={handleSharePdf}
+                      className="py-2.5 px-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex flex-col items-center justify-center gap-1 shadow-md active:scale-95 transition-all cursor-pointer"
+                      title="Menu do celular (Instagram, WhatsApp, Drive, etc.)"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      <span>Redes / Apps</span>
+                    </button>
+
+                    {/* Telegram */}
+                    <button
+                      type="button"
+                      onClick={handleDirectTelegram}
+                      className="py-2.5 px-2 rounded-xl text-xs font-bold bg-[#0088cc] hover:bg-[#0077b5] text-white flex flex-col items-center justify-center gap-1 shadow-md active:scale-95 transition-all cursor-pointer"
+                      title="Enviar no Telegram"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>Telegram</span>
+                    </button>
+
+                    {/* E-mail */}
+                    <button
+                      type="button"
+                      onClick={handleDirectEmail}
+                      className="py-2.5 px-2 rounded-xl text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center gap-1 shadow-md active:scale-95 transition-all cursor-pointer"
+                      title="Enviar por E-mail"
+                    >
+                      <Mail className="w-4 h-4" />
+                      <span>E-mail</span>
+                    </button>
+                  </div>
+
+                  {/* Copiar Resumo em Texto */}
+                  <button
+                    type="button"
+                    onClick={handleCopyProposalText}
+                    className={`w-full py-2 px-3 rounded-xl border text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                      copiedMessage
+                        ? 'bg-emerald-500/25 border-emerald-400 text-emerald-300'
+                        : isDark
+                        ? 'bg-slate-900/80 border-slate-700 text-slate-300 hover:text-white'
+                        : 'bg-white border-slate-300 text-slate-700 hover:text-slate-900'
+                    }`}
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>{copiedMessage ? '✓ Resumo copiado com sucesso!' : 'Copiar Resumo em Texto'}</span>
+                  </button>
                 </div>
               )}
 
               {shareSuccess && (
                 <div className="p-3 bg-blue-500/20 border border-blue-500/40 rounded-xl text-blue-300 text-center font-bold text-xs flex items-center justify-center gap-2 animate-in fade-in">
                   <Share2 className="w-4 h-4 text-blue-400" />
-                  <span>Proposta compartilhada com sucesso!</span>
+                  <span>Proposta enviada com sucesso!</span>
                 </div>
               )}
             </div>
 
-            {/* BOTÕES DE AÇÃO: WHATSAPP + COMPARTILHAR + BAIXAR */}
+            {/* BOTÕES PRINCIPAIS DE AÇÃO */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-slate-700/50">
               {/* Botão Direto WhatsApp */}
               <button
@@ -1238,21 +1353,21 @@ Grupo Germânica · Consórcio Disal`;
                 disabled={isGeneratingPdf}
                 onClick={handleSharePdf}
                 className="py-2.5 px-3 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
-                title="Compartilhar pelo menu do celular"
+                title="Compartilhar nas Redes Sociais"
               >
                 <Share2 className="w-4 h-4" />
-                <span>Compartilhar</span>
+                <span>Redes Sociais</span>
               </button>
 
               {/* Botão Baixar PDF */}
               <button
                 type="button"
                 disabled={isGeneratingPdf}
-                onClick={handleDownloadDirectPdf}
+                onClick={() => handleDownloadDirectPdf()}
                 className="py-2.5 px-3 rounded-xl text-xs font-black bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center justify-center gap-1.5 transition-all shadow-md shadow-amber-500/20 active:scale-95 disabled:opacity-50 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
-                <span>Baixar PDF</span>
+                <span>{downloadSuccess ? 'Baixar Novamente' : 'Baixar PDF'}</span>
               </button>
             </div>
           </div>

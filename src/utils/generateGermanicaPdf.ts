@@ -67,7 +67,8 @@ export function createGermanicaPdfDoc(
   doc.setTextColor(180, 83, 9);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
-  doc.text(`PLANO ${params.tipoPlano}`, pageWidth - margin, yPos + 6.5, { align: 'right' });
+  const planoLabel = params.tipoPlano === '100%' ? 'PLANO NORMAL' : 'PLANO LIGHT';
+  doc.text(planoLabel, pageWidth - margin, yPos + 6.5, { align: 'right' });
 
   yPos += 12;
 
@@ -166,7 +167,8 @@ export function createGermanicaPdfDoc(
   doc.setTextColor(22, 101, 52);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
-  doc.text(`2. PARCELA INICIAL (${params.tipoPlano})`, card2X + 5, yPos + 6.5);
+  const card2Title = params.tipoPlano === '100%' ? '2. PARCELA INICIAL (PLANO NORMAL)' : '2. PARCELA INICIAL (PLANO LIGHT)';
+  doc.text(card2Title, card2X + 5, yPos + 6.5);
 
   doc.setTextColor(21, 128, 61);
   doc.setFont('helvetica', 'bold');
