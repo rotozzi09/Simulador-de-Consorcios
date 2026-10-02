@@ -281,33 +281,24 @@ Grupo Germânica · Consórcio Disal`;
       >
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-1.5 sm:gap-3">
           {/* Logo & Nome Completo "Simulador Germânica" */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 min-w-0">
-            <div
-              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 border ${
-                isDark
-                  ? 'bg-amber-500/10 border-amber-500/40 text-amber-400'
-                  : 'bg-amber-100 border-amber-400 text-amber-800'
-              }`}
-            >
-              <Calculator className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-1">
-                <span className={`text-xs sm:text-base font-black tracking-tight whitespace-nowrap ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Simulador Germânica
-                </span>
-                <span
-                  className={`text-[8px] sm:text-[9px] uppercase font-black px-1 py-0.2 rounded border tracking-wider shrink-0 ${
-                    isDark
-                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                      : 'bg-amber-100 text-amber-900 border-amber-300'
-                  }`}
-                >
-                  DISAL
-                </span>
-              </div>
-              <span className={`text-[10px] hidden sm:block leading-none mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Campos com <strong className={isDark ? 'text-amber-400' : 'text-amber-800'}>borda laranja</strong> são editáveis
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
+            <img
+              src="/icon-192.png"
+              alt="Volkswagen Germânica"
+              className="w-8 h-8 sm:w-10 sm:h-10 object-contain drop-shadow-md shrink-0 select-none pointer-events-none"
+            />
+            <div className="flex flex-col items-center justify-center min-w-0">
+              <span className={`text-xs sm:text-base font-black tracking-tight whitespace-nowrap leading-tight text-center ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Simulador Germânica
+              </span>
+              <span
+                className={`text-[8px] sm:text-[9px] uppercase font-black px-2 py-0.5 rounded-full border tracking-widest text-center mt-0.5 leading-none shadow-xs ${
+                  isDark
+                    ? 'bg-amber-500/15 text-amber-400 border-amber-500/40'
+                    : 'bg-amber-100 text-amber-900 border-amber-300'
+                }`}
+              >
+                DISAL
               </span>
             </div>
           </div>
