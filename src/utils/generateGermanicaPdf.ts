@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import { GermanicaCalculationResult } from '../types/germanica';
 import { formatBRL } from './germanicaCalculations';
+import { VW_LOGO_BASE64 } from './vwLogoBase64';
 
 interface GeneratePdfOptions {
   clientName?: string;
@@ -39,23 +40,32 @@ export function createGermanicaPdfDoc(
   doc.setFillColor(234, 179, 8); // #eab308 (Dourado)
   doc.rect(margin + 50, 12, contentWidth - 100, 3, 'F');
 
-  // --- 2. CABEÇALHO CORPORATIVO (TOTALMENTE ESPAÇADO, SEM SOBREPOSIÇÃO) ---
-  let yPos = 22;
+  // --- 2. CABEÇALHO CORPORATIVO COM LOGO VOLKSWAGEN ---
+  let yPos = 19;
+  const logoSize = 17; // 17mm x 17mm
+  const textX = margin + logoSize + 4; // 15 + 17 + 4 = 36mm
+
+  // Inserir Logo Volkswagen Oficial à esquerda
+  try {
+    doc.addImage(VW_LOGO_BASE64, 'PNG', margin, yPos, logoSize, logoSize);
+  } catch (err) {
+    console.warn('Erro ao inserir logo no PDF:', err);
+  }
 
   // Linha 1 do Cabeçalho: Badges à esquerda + Data e Plano à direita
   doc.setFillColor(11, 28, 56); // Azul Germânica
-  doc.roundedRect(margin, yPos, 38, 6, 1.5, 1.5, 'F');
+  doc.roundedRect(textX, yPos, 36, 5.5, 1.2, 1.2, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.text('GRUPO GERMÂNICA', margin + 3.5, yPos + 4.2);
+  doc.setFontSize(7.2);
+  doc.text('GRUPO GERMÂNICA', textX + 3, yPos + 3.9);
 
   doc.setFillColor(245, 158, 11); // Âmbar Disal
-  doc.roundedRect(margin + 41, yPos, 34, 6, 1.5, 1.5, 'F');
+  doc.roundedRect(textX + 38, yPos, 32, 5.5, 1.2, 1.2, 'F');
   doc.setTextColor(11, 28, 56);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.text('CONSÓRCIO DISAL', margin + 43.5, yPos + 4.2);
+  doc.setFontSize(7.2);
+  doc.text('CONSÓRCIO DISAL', textX + 40, yPos + 3.9);
 
   // Informações de Data e Plano alinhadas à direita (Texto limpo)
   const dataFormatada = new Date().toLocaleDateString('pt-BR');
@@ -70,23 +80,19 @@ export function createGermanicaPdfDoc(
   const planoLabel = params.tipoPlano === '100%' ? 'PLANO NORMAL' : 'PLANO LIGHT';
   doc.text(planoLabel, pageWidth - margin, yPos + 6.5, { align: 'right' });
 
-  yPos += 12;
-
-  // Linha 2 do Cabeçalho: TÍTULO PRINCIPAL (Largura total livre)
+  // Linha 2 do Cabeçalho: TÍTULO PRINCIPAL
   doc.setTextColor(11, 28, 56);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.text('PROPOSTA COMERCIAL DE CONSÓRCIO', margin, yPos);
-
-  yPos += 5.5;
+  doc.setFontSize(14.5);
+  doc.text('PROPOSTA COMERCIAL DE CONSÓRCIO', textX, yPos + 11.5);
 
   // Linha 3 do Cabeçalho: Subtítulo
   doc.setTextColor(100, 116, 139);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.text('Simulação financeira oficial e planejamento de contemplação', margin, yPos);
+  doc.setFontSize(8);
+  doc.text('Simulação financeira oficial e planejamento de contemplação', textX, yPos + 16);
 
-  yPos += 4.5;
+  yPos += 19;
 
   // Linha divisória
   doc.setDrawColor(11, 28, 56);

@@ -111,6 +111,7 @@ export default function App() {
   const getProposalFormattedText = () => {
     const cleanClient = clientName.trim() || 'Cliente';
     const cleanConsultant = consultantName.trim() || 'Especialista Germânica';
+    const planoNome = params.tipoPlano === '100%' ? 'Plano Normal' : 'Plano Light';
     
     return `📋 *PROPOSTA OFICIAL - CONSÓRCIO GERMÂNICA / DISAL*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -118,7 +119,7 @@ export default function App() {
 💼 *Consultor:* ${cleanConsultant}
 
 💰 *1. Valor do Crédito:* ${formatBRL(params.credito)}
-💵 *2. Parcela Inicial (${params.tipoPlano}):* ${formatBRL(res.parcelaSimulacao)}
+💵 *2. Parcela Inicial (${planoNome}):* ${formatBRL(res.parcelaSimulacao)}
 📅 *3. Prazo Total:* ${params.prazoMeses} meses
 🎯 *4. Valor do Lance Total:* ${formatBRL(res.lanceTotalCalculo)} ${res.lanceEmbutidoValor > 0 ? `(${formatBRL(res.lanceEmbutidoValor)} embutido)` : ''}
 🚀 *5. Nova Parcela Pós-Contemplação (${res.prazoRestante}m):* ${formatBRL(res.parcelaPosContemplacaoMesmoPrazo)} / mês
@@ -592,7 +593,7 @@ Grupo Germânica · Consórcio Disal`;
                       isDark ? 'text-emerald-400' : 'text-emerald-800'
                     }`}
                   >
-                    Parcela Simulação ({params.tipoPlano})
+                    Parcela Simulação ({params.tipoPlano === '100%' ? 'Plano Normal' : 'Plano Light'})
                   </span>
                   <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                     Fórmula Calculada Automática
@@ -1210,7 +1211,7 @@ Grupo Germânica · Consórcio Disal`;
                   </div>
 
                   <div className="p-2 rounded bg-slate-900/60 border border-slate-800">
-                    <span className="text-slate-400 block text-[10px]">2. Parcela Inicial:</span>
+                    <span className="text-slate-400 block text-[10px]">2. Parcela Inicial ({params.tipoPlano === '100%' ? 'Plano Normal' : 'Plano Light'}):</span>
                     <strong className="text-emerald-400 text-sm">{formatBRL(res.parcelaSimulacao)}</strong>
                   </div>
 
